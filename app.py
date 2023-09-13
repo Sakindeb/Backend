@@ -1,38 +1,69 @@
+
+
 from flask import Flask, request, jsonify
-import datetime
-import pytz
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+db = SQLAlchemy(app)
 
-@app.route('/api', methods=['GET'])
-def get_info():
-    # Get query parameters from the request
-    slack_name = request.args.get('slack_name')
-    track = request.args.get('track')
+class Person(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
 
-    # Get the current day of the week
-    current_day = datetime.datetime.now().strftime("%A")
+@app.route('/api/person', methods=['POST'])
+def create_person():
+    data = request.get_json()
+    name = data.get('name')
 
-    # Get the current UTC time
-    utc_time = datetime.datetime.now(pytz.UTC)
-    utc_time_str = utc_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    if not name:
+        return jsonify({'message': 'Name is required'}), 400
 
-    # GitHub URLs 
-    github_repo_url = "https://github.com/Sakindeb/Backend"
-    github_file_url = "https://github.com/Sakindeb/Backend/blob/main/app.py"
+    person = Person(name=name)
+    db.session.add(person)
+    db.session.commit()
+    return jsonify({'message': 'Person created successfully'}), 201
 
-    # Create the response JSON
-    response = {
-        "slack_name": slack_name,
-        "current_day": current_day,
-        "utc_time": utc_time_str,
-        "track": track,
-        "github_file_url": github_file_url,
-        "github_repo_url": github_repo_url,
-        "status_code": 200
-    }
+@app.route('/api/person/<int:person_id>', methods=['GET'])
+def get_person(person_id):
+    with app.app_context():
+        person = Person.query.get(person_id)
 
-    return jsonify(response)
+        if not person:
+            return jsonify({'message': 'Person not found'}), 404
+
+        return jsonify({'id': person.id, 'name': person.name})
+
+
+@app.route('/api/person/<int:person_id>', methods=['PUT'])
+def update_person(person_id):
+    person = Person.query.get(person_id)
+
+    if not person:
+        return jsonify({'message': 'Person not found'}), 404
+
+    data = request.get_json()
+    name = data.get('name')
+
+    if not name:
+        return jsonify({'message': 'Name is required'}), 400
+
+    person.name = name
+    db.session.commit()
+    return jsonify({'message': 'Person updated successfully'})
+
+@app.route('/api/person/<int:person_id>', methods=['DELETE'])
+def delete_person(person_id):
+    person = Person.query.get(person_id)
+
+    if not person:
+        return jsonify({'message': 'Person not found'}), 404
+
+    db.session.delete(person)
+    db.session.commit()
+    return jsonify({'message': 'Person deleted successfully'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    with app.app_context():  # Create an application context before creating tables
+        db.create_all()
+    app.run(debug=True)
