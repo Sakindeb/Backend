@@ -1,4 +1,5 @@
 # CRUD REST API with SQLite Database
+![image](https://github.com/Sakindeb/Backend/assets/116188961/6f1bde38-16d1-449d-80ab-4b3a9e7683b0)
 
 This project is a simple REST API built with Flask, allowing basic CRUD operations on a "person" resource. It uses an SQLite database to store person information.
 
