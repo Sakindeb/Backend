@@ -1,7 +1,7 @@
 import requests
 
 # Define the API endpoint URL and the person ID to delete
-api_url = 'http://127.0.0.1:5000/api/person'  # Update with your API URL
+api_url = 'http://127.0.0.1:5000/api'  # Update with your API URL
 person_id_to_delete = 1  # Replace with the ID of the person you want to delete
 
 # Send a DELETE request to delete the person by ID

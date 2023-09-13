@@ -2,7 +2,7 @@
 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-
+from graphviz import Graphviz
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
@@ -11,7 +11,7 @@ class Person(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
-@app.route('/api/person', methods=['POST'])
+@app.route('/api', methods=['POST'])
 def create_person():
     data = request.get_json()
     name = data.get('name')
@@ -24,7 +24,7 @@ def create_person():
     db.session.commit()
     return jsonify({'message': 'Person created successfully'}), 201
 
-@app.route('/api/person/<int:person_id>', methods=['GET'])
+@app.route('/api/<int:person_id>', methods=['GET'])
 def get_person(person_id):
     with app.app_context():
         person = Person.query.get(person_id)
@@ -35,7 +35,7 @@ def get_person(person_id):
         return jsonify({'id': person.id, 'name': person.name})
 
 
-@app.route('/api/person/<int:person_id>', methods=['PUT'])
+@app.route('/api/<int:person_id>', methods=['PUT'])
 def update_person(person_id):
     person = Person.query.get(person_id)
 
@@ -52,7 +52,7 @@ def update_person(person_id):
     db.session.commit()
     return jsonify({'message': 'Person updated successfully'})
 
-@app.route('/api/person/<int:person_id>', methods=['DELETE'])
+@app.route('/api/<int:person_id>', methods=['DELETE'])
 def delete_person(person_id):
     person = Person.query.get(person_id)
 
